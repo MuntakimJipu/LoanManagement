@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Microfinance Loan Management System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CSS Styles -->
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 90%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px 0;
+        }
+
+        /* Navigation Bar */
+        nav {
+            background-color: #35424a;
+            color: #ffffff;
+            padding: 15px 0;
+            text-align: center;
+        }
+
+        nav h1 {
+            margin: 0;
+        }
+
+        /* Form Styles */
+        #loan-form-section, #loan-list-section {
+            background: #ffffff;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        #loan-form-section h2, #loan-list-section h2 {
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+        }
+
+        button[type="submit"], button.action-button {
+            background-color: #35424a;
+            color: #ffffff;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        button[type="submit"]:hover, button.action-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Notification Styles */
+        #notification {
+            background-color: #4caf50;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Table Styles */
+        #loan-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #loan-table th, #loan-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        #loan-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        #loan-table th {
+            background-color: #35424a;
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaaaaa;
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+        }
+
+        /* Search Bar */
+        #search-bar {
+            margin-bottom: 20px;
+        }
+
+        #search-bar input {
+            width: 100%;
+            padding: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 90%;
+            }
+
+            button.action-button {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <h1>Microfinance Loan Management System</h1>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <!-- Notification -->
+        <div id="notification"></div>
+
+        <!-- Loan Form Section -->
+        <section id="loan-form-section">
+            <h2>Add New Loan</h2>
+            <form id="loan-form">
+                <div class="form-group">
+                    <label for="loanType">Loan Type:</label>
+                    <select id="loanType" required>
+                        <option value="" disabled selected>Select Loan Type</option>
+                        <option value="AgricultureLoan">Agriculture Loan</option>
+                        <option value="SmallBusinessLoan">Small Business Loan</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="borrowerName">Borrower Name:</label>
+                    <input type="text" id="borrowerName" placeholder="Enter borrower's name" required>
+                </div>
+                <div class="form-group">
+                    <label for="principalAmount">Principal Amount:</label>
+                    <input type="number" id="principalAmount" placeholder="Enter principal amount" required min="1">
+                </div>
+                <div class="form-group">
+                    <label for="durationYears">Duration (Years):</label>
+                    <input type="number" id="durationYears" placeholder="Enter duration in years" required min="1">
+                </div>
+                <button type="submit">Add Loan</button>
+            </form>
+        </section>
+
+        <!-- Loan List Section -->
+        <section id="loan-list-section">
+            <h2>Loan List</h2>
+
+            <!-- Search Bar -->
+            <div id="search-bar">
+                <input type="text" id="searchInput" placeholder="Search by Borrower Name...">
+            </div>
+
+            <!-- Sort Options -->
+            <div id="sort-options">
+                <label for="sortSelect">Sort By:</label>
+                <select id="sortSelect">
+                    <option value="loan_id">Loan ID</option>
+                    <option value="borrower_name">Borrower Name</option>
+                    <option value="balance">Balance</option>
+                </select>
+            </div>
+
+            <table id="loan-table">
+                <thead>
+                    <tr>
+                        <th>Loan ID</th>
+                        <th>Borrower Name</th>
+                        <th>Loan Type</th>
+                        <th>Principal Amount</th>
+                        <th>Duration (Years)</th>
+                        <th>Interest</th>
+                        <th>Balance</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loan entries will appear here -->
+                </tbody>
+            </table>
+        </section>
+
+    </div>
+
+    <!-- Modal for Repayment -->
+    <div id="repayment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Process Repayment</h2>
+            <form id="repayment-form">
+                <div class="form-group">
+                    <label for="repaymentAmount">Repayment Amount:</label>
+                    <input type="number" id="repaymentAmount" placeholder="Enter repayment amount" required min="1">
+                </div>
+                <button type="submit">Process Repayment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Editing Loan -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button-edit">&times;</span>
+            <h2>Edit Loan</h2>
+            <form id="edit-form">
+                <div class="form-group">
+                    <label for="editBorrowerName">Borrower Name:</label>
+                    <input type="text" id="editBorrowerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPrincipalAmount">Principal Amount:</label>
+                    <input type="number" id="editPrincipalAmount" required min="1">
+                </div>
+                <div class="form-group">
+                    <label for="editDurationYears">Duration (Years):</label>
+                    <input type="number" id="editDurationYears" required min="1">
+                </div>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Data Management
+        let loans = [];
+        let currentLoanId = 1;
+
+        // DOM Elements
+        const loanForm = document.getElementById('loan-form');
+        const loanTableBody = document.querySelector('#loan-table tbody');
+        const repaymentModal = document.getElementById('repayment-modal');
+        const editModal = document.getElementById('edit-modal');
+        const closeModalButton = document.querySelector('.close-button');
+        const closeEditModalButton = document.querySelector('.close-button-edit');
+        const repaymentForm = document.getElementById('repayment-form');
+        const editForm = document.getElementById('edit-form');
+        const notification = document.getElementById('notification');
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+
+        // Event Listeners
+        loanForm.addEventListener('submit', addLoan);
+        closeModalButton.addEventListener('click', closeModal);
+        closeEditModalButton.addEventListener('click', closeEditModal);
+        window.addEventListener('click', outsideClick);
+        repaymentForm.addEventListener('submit', processRepayment);
+        editForm.addEventListener('submit', saveEditedLoan);
+        searchInput.addEventListener('keyup', updateLoanTable);
+        sortSelect.addEventListener('change', updateLoanTable);
+
+        // Initialize Loans from Local Storage
+        loadFromLocalStorage();
+        calculateAllInterests();
+        updateLoanTable();
+
+        // Functions
+
+        function addLoan(e) {
+            e.preventDefault();
+
+            // Get form values
+            const loanType = document.getElementById('loanType').value;
+            const borrowerName = document.getElementById('borrowerName').value.trim();
+            const principalAmount = parseFloat(document.getElementById('principalAmount').value);
+            const durationYears = parseInt(document.getElementById('durationYears').value);
+
+            // Validation
+            if (!borrowerName || principalAmount <= 0 || durationYears <= 0) {
+                showNotification('Please enter valid input values.', true);
+                return;
+            }
+
+            let loan = {
+                loan_id: currentLoanId,
+                borrower_name: borrowerName,
+                principal_amount: principalAmount,
+                duration_years: durationYears,
+                balance: principalAmount,
+                type: loanType
+            };
+
+            loans.push(loan);
+            currentLoanId++;
+            saveToLocalStorage();
+            calculateAllInterests();
+            updateLoanTable();
+
+            // Reset form
+            loanForm.reset();
+
+            showNotification('Loan added successfully.');
+        }
+
+        function calculateInterest(loan) {
+            let rate;
+            if (loan.type === 'AgricultureLoan') {
+                rate = loan.duration_years > 2 ? 0.04 : 0.05;
+            } else if (loan.type === 'SmallBusinessLoan') {
+                rate = 0.06;
+            } else {
+                rate = 0.05;
+            }
+            return loan.principal_amount * rate * loan.duration_years;
+        }
+
+        function processRepayment(e) {
+            e.preventDefault();
+
+            const loanId = parseInt(repaymentForm.getAttribute('data-id'));
+            const repaymentAmount = parseFloat(document.getElementById('repaymentAmount').value);
+
+            if (repaymentAmount <= 0) {
+                showNotification('Please enter a valid repayment amount.', true);
+                return;
+            }
+
+            const loan = getLoanById(loanId);
+
+            if (loan.type === 'AgricultureLoan') {
+                const subsidy = repaymentAmount * 0.01;
+                loan.balance -= (repaymentAmount + subsidy);
+            } else {
+                loan.balance -= repaymentAmount;
+            }
+
+            if (loan.balance < 0) {
+                loan.balance = 0;
+            }
+
+            saveToLocalStorage();
+            updateLoanTable();
+
+            // Close modal and reset form
+            repaymentModal.style.display = 'none';
+            repaymentForm.reset();
+
+            showNotification('Repayment processed successfully.');
+        }
+
+        function updateLoanTable() {
+            // Clear current table
+            loanTableBody.innerHTML = '';
+
+            // Get search query
+            const searchQuery = searchInput.value.toLowerCase();
+
+            // Get sort option
+            const sortOption = sortSelect.value;
+
+            // Sort loans
+            const sortedLoans = [...loans].sort((a, b) => {
+                if (sortOption === 'loan_id') {
+                    return a.loan_id - b.loan_id;
+                } else if (sortOption === 'borrower_name') {
+                    return a.borrower_name.localeCompare(b.borrower_name);
+                } else if (sortOption === 'balance') {
+                    return a.balance - b.balance;
+                }
+            });
+
+            sortedLoans.forEach(loan => {
+                if (loan.borrower_name.toLowerCase().includes(searchQuery)) {
+                    const row = document.createElement('tr');
+
+                    row.innerHTML = `
+                        <td>${loan.loan_id}</td>
+                        <td>${loan.borrower_name}</td>
+                        <td>${loan.type}</td>
+                        <td>${loan.principal_amount.toFixed(2)}</td>
+                        <td>${loan.duration_years}</td>
+                        <td>${loan.interest.toFixed(2)}</td>
+                        <td>${loan.balance.toFixed(2)}</td>
+                        <td>
+                            <button class="action-button repay-button" data-id="${loan.loan_id}">Repay</button>
+                            <button class="action-button edit-button" data-id="${loan.loan_id}">Edit</button>
+                            <button class="action-button delete-button" data-id="${loan.loan_id}">Delete</button>
+                        </td>
+                    `;
+
+                    loanTableBody.appendChild(row);
+                }
+            });
+
+            // Add event listeners to action buttons
+            const repayButtons = document.querySelectorAll('.repay-button');
+            repayButtons.forEach(button => {
+                button.addEventListener('click', openRepaymentModal);
+            });
+
+            const deleteButtons = document.querySelectorAll('.delete-button');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', deleteLoan);
+            });
+
+            const editButtons = document.querySelectorAll('.edit-button');
+            editButtons.forEach(button => {
+                button.addEventListener('click', openEditModal);
+            });
+        }
+
+        function calculateAllInterests() {
+            loans.forEach(loan => {
+                loan.interest = calculateInterest(loan);
+            });
+        }
+
+        function getLoanById(loan_id) {
+            return loans.find(loan => loan.loan_id === loan_id);
+        }
+
+        function deleteLoan(e) {
+            const loanId = parseInt(e.target.getAttribute('data-id'));
+            if (confirm('Are you sure you want to delete this loan?')) {
+                loans = loans.filter(loan => loan.loan_id !== loanId);
+                saveToLocalStorage();
+                updateLoanTable();
+                showNotification('Loan deleted successfully.');
+            }
+        }
+
+        function openRepaymentModal(e) {
+            const loanId = e.target.getAttribute('data-id');
+            repaymentForm.setAttribute('data-id', loanId);
+            repaymentModal.style.display = 'block';
+        }
+
+        function openEditModal(e) {
+            const loanId = e.target.getAttribute('data-id');
+            const loan = getLoanById(parseInt(loanId));
+            if (loan) {
+                editForm.setAttribute('data-id', loanId);
+                document.getElementById('editBorrowerName').value = loan.borrower_name;
+                document.getElementById('editPrincipalAmount').value = loan.principal_amount;
+                document.getElementById('editDurationYears').value = loan.duration_years;
+                editModal.style.display = 'block';
+            }
+        }
+
+        function saveEditedLoan(e) {
+            e.preventDefault();
+
+            const loanId = parseInt(editForm.getAttribute('data-id'));
+            const borrowerName = document.getElementById('editBorrowerName').value.trim();
+            const principalAmount = parseFloat(document.getElementById('editPrincipalAmount').value);
+            const durationYears = parseInt(document.getElementById('editDurationYears').value);
+
+            // Validation
+            if (!borrowerName || principalAmount <= 0 || durationYears <= 0) {
+                showNotification('Please enter valid input values.', true);
+                return;
+            }
+
+            const loan = getLoanById(loanId);
+
+            if (loan) {
+                loan.borrower_name = borrowerName;
+                loan.principal_amount = principalAmount;
+                loan.duration_years = durationYears;
+                loan.interest = calculateInterest(loan);
+                saveToLocalStorage();
+                updateLoanTable();
+
+                // Close modal and reset form
+                editModal.style.display = 'none';
+                editForm.reset();
+
+                showNotification('Loan updated successfully.');
+            } else {
+                showNotification('Loan not found.', true);
+            }
+        }
+
+        function closeModal() {
+            repaymentModal.style.display = 'none';
+        }
+
+        function closeEditModal() {
+            editModal.style.display = 'none';
+        }
+
+        function outsideClick(e) {
+            if (e.target == repaymentModal) {
+                repaymentModal.style.display = 'none';
+            }
+            if (e.target == editModal) {
+                editModal.style.display = 'none';
+            }
+        }
+
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.style.backgroundColor = isError ? '#f44336' : '#4caf50';
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('loans', JSON.stringify(loans));
+            localStorage.setItem('currentLoanId', currentLoanId);
+        }
+
+        function loadFromLocalStorage() {
+            const loansData = JSON.parse(localStorage.getItem('loans'));
+            const loanId = localStorage.getItem('currentLoanId');
+            if (loansData) {
+                loans = loansData;
+            }
+            if (loanId) {
+                currentLoanId = parseInt(loanId);
+            }
+        }
+
+    </script>
+</body>
+</html>
